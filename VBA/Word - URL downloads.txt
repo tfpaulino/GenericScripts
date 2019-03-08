@@ -1,0 +1,75 @@
+Option Explicit
+Private Declare Function ShellExecute _
+                            Lib "shell32.dll" _
+                            Alias "ShellExecuteA" ( _
+                            ByVal hwnd As Long, _
+                            ByVal lpOperation As String, _
+                            ByVal lpFile As String, _
+                            ByVal lpParameters As String, _
+                            ByVal lpDirectory As String, _
+                            ByVal nShowCmd As Long) _
+                            As Long
+
+Private Sub LaunchWebsite(strUrl As String)
+On Error GoTo wellsrLaunchError
+    Dim r As Long
+    r = ShellExecute(0, "open", strUrl, 0, 0, 1)
+    If r = 5 Then 'if access denied, try this alternative
+            r = ShellExecute(0, "open", "rundll32.exe", "url.dll,FileProtocolHandler " & strUrl, 0, 1)
+    End If
+    Exit Sub
+wellsrLaunchError:
+MsgBox "Error encountered while trying to launch URL." & vbNewLine & vbNewLine & "Error: " & Err.Number & ", " & Err.Description, vbCritical, "Error Encountered"
+End Sub
+
+Function GetAllHyperlinks()
+On Error Resume Next
+'Updateby20140214
+    Dim docCurrent As Document
+    Dim docNew As Document
+    Dim oLink As Hyperlink
+    Dim rng As Range
+    Application.ScreenUpdating = False
+    Set docCurrent = ActiveDocument
+    Set docNew = Documents.Add
+    'ActiveWindow.View.ShowRevisionsAndComments = False 'Not Working
+    'ActiveWindow.View.RevisionsView = wdRevisionsViewFinal 'Not Working
+    For Each oLink In docCurrent.Hyperlinks
+        If oLink.Address <> "" Then
+        'If InStr(LCase(oLink.Address), "ecm") <> 0 Then
+            If oLink.Address <> oLink.TextToDisplay Then
+                'MsgBox oLink.TextToDisplay
+                Set rng = docNew.Range
+                rng.Collapse
+                rng.InsertParagraph
+                rng.InsertAfter (oLink.Address)
+                Deleemptyparagraphs
+            End If
+            LaunchWebsite (oLink.Address)
+            'rng.InsertAfter (oLink.Range)
+        End If
+    Next oLink
+    docNew.Activate
+    Application.ScreenUpdating = True
+    Application.ScreenRefresh
+End Function
+
+Sub Deleemptyparagraphs()
+Selection.Find.ClearFormatting
+Selection.Find.Replacement.ClearFormatting
+With Selection.Find
+.Text = "^p^p"
+.Replacement.Text = "^p"
+.Forward = True
+.Wrap = wdFindContinue
+.Format = False
+.MatchCase = False
+.MatchWholeWord = False
+.MatchByte = False
+.MatchAllWordForms = False
+.MatchSoundsLike = False
+.MatchWildcards = False
+.MatchFuzzy = False
+End With
+Selection.Find.Execute Replace:=wdReplaceAll
+End Sub

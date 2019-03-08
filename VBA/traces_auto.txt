@@ -1,0 +1,68 @@
+Sub Main()
+    Dim DirPath As String
+    
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual 'erases the Clipboard Memory
+    Application.EnableEvents = False 'Disable automatic triggers (App_SheetChange)
+    
+    DirPath = ActiveWorkbook.Sheets(Result).Range(C1).Value
+    Call LoopThroughFiles(DirPath)
+    
+    Application.ScreenUpdating = True
+    Application.Calculation = xlCalculationAutomatic
+    Application.EnableEvents = True
+End Sub
+
+Sub LoopThroughFiles(DirPath As String)
+    Dim StrFile As String
+    Dim AbsFilePath As String
+    Dim ScriptRes As String
+    Dim wb As Workbook
+    Dim ws As Worksheet
+    Dim RowNum As Integer
+
+    Set wb = ActiveWorkbook
+    Set ws = wb.Sheets(Nar)
+    
+    ws.Range(AA).ClearContents
+    ws.Range(A1) = Traces
+    RowNum = 2
+    
+    StrFile = Dir(DirPath & Scenario.trc, vbDirectory)
+    Do While Len(StrFile)  0
+        AbsFilePath = DirPath &  & StrFile
+
+        ScriptTrace = ExtractLastLine(AbsFilePath)
+
+        ws.Range(A & RowNum).Value = ScriptTrace
+        RowNum = RowNum + 1
+        
+        StrFile = Dir
+    Loop
+End Sub
+
+Public Function ExtractLastLine(FilePath As String) As String
+    Dim MyChar As String, Pointer As Long, LastLine As String
+    
+    If FileLen(FilePath)  0 Then
+        Open FilePath For Binary As #1
+        Pointer = LOF(1) 'original LOF(1)-2
+        MyChar = Chr$(32)
+        Do
+            Get #1, Pointer, MyChar
+            If MyChar = vbCr Or MyChar = vbLf Then
+                Exit Do
+            Else Pointer = Pointer - 1
+                LastLine = MyChar & LastLine
+            End If
+        Loop
+        Close #1
+        If LastLine Like scn.trc Then
+            ExtractLastLine = LastLine
+        Else
+            ExtractLastLine = FilePath &   Not Finished
+        End If
+    Else
+        ExtractLastLine = FilePath &   Empty File
+    End If
+End Function

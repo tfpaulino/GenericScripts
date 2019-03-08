@@ -1,0 +1,79 @@
+Function CheckURL(strUrl As String) As Boolean
+  Dim objDemand As Object
+  Dim varResult As Variant
+ 
+  On Error GoTo ErrorHandler
+  Set objDemand = CreateObject("WinHttp.WinHttpRequest.5.1")
+ 
+  With objDemand
+    .Open "GET", strUrl, False
+    .Send
+    varResult = .StatusText
+  End With
+ 
+  Set objDemand = Nothing
+ 
+  If varResult = "OK" Then
+    CheckURL = True
+  Else
+    CheckURL = False
+  End If
+ 
+ErrorHandler:
+End Function
+
+Sub ReturnURLCheck()
+  Dim objLink As Hyperlink
+  Dim strLinkText As String
+  Dim strLinkAddress As String
+  Dim strResult As String
+  Dim nInvalidLink As Integer, nTotalLinks As Integer
+  Dim objDoc As Document
+ 
+  Application.ScreenUpdating = False
+ 
+  Set objDoc = ActiveDocument
+  nTotalLinks = objDoc.Hyperlinks.Count
+  nInvalidLink = 0
+ 
+  With objDoc
+    For Each objLink In .Hyperlinks
+      strLinkText = objLink.Range.Text
+      strLinkAddress = objLink.Address
+ 
+      If Not CheckURL(strLinkAddress) Then
+        nInvalidLink = nInvalidLink + 1
+        strResult = frmCheckURLs.txtShowResult.Text
+        frmCheckURLs.txtShowResult.Text = strResult & nInvalidLink & ". Invalid Link Information:" & vbNewLine & _
+                                          "Displayed Text: " & strLinkText & vbNewLine & _
+                                           "Address: " & strLinkAddress & vbNewLine & vbNewLine
+      End If
+    Next objLink
+ 
+    frmCheckURLs.txtTotalLinks.Text = nTotalLinks
+    frmCheckURLs.txtNumberOfInvalidLinks.Text = nInvalidLink
+    frmCheckURLs.Show Modal
+ 
+  End With
+  Application.ScreenUpdating = True
+End Sub
+
+Sub HighlightInvalidLinks()
+  Dim objLink As Hyperlink
+  Dim strLinkAddress As String
+  Dim strResult As String
+  Dim objDoc As Document
+ 
+  Set objDoc = ActiveDocument
+ 
+  With objDoc
+    For Each objLink In .Hyperlinks
+      strLinkAddress = objLink.Address
+ 
+      If Not CheckURL(strLinkAddress) Then
+        objLink.Range.HighlightColorIndex = wdYellow
+      End If
+    Next objLink
+  End With
+
+End Sub

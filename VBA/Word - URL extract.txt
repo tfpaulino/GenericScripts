@@ -1,0 +1,40 @@
+Sub HyperlinksExtract()
+'Updateby20140214
+    Dim oLink As Hyperlink
+    Dim docCurrent As Document 'current document
+    Dim docNew As Document 'new document
+    Dim rngStory As StoryRanges
+    Set docCurrent = ActiveDocument
+    Set docNew = Documents.Add
+    For Each oLink In docCurrent.Hyperlinks
+        oLink.Range.Copy
+        'oLink.TextToDisplay
+        docNew.Activate
+        Selection.Paste
+        Selection.TypeParagraph
+    Next
+     
+    Set docNew = Nothing
+    Set docCurrent = Nothing
+End Sub
+
+Function GetAllHyperlinks()
+'Updateby20140214
+    Dim docCurrent As Document
+    Dim docNew As Document
+    Dim oLink As Hyperlink
+    Dim rng As Range
+    Application.ScreenUpdating = False
+    Set docCurrent = ActiveDocument
+    Set docNew = Documents.Add
+    For Each oLink In docCurrent.Hyperlinks
+        Set rng = docNew.Range
+        rng.Collapse
+        rng.InsertParagraph
+        rng.InsertAfter (oLink.Address)
+        'rng.InsertAfter (oLink.Range)
+    Next
+    docNew.Activate
+    Application.ScreenUpdating = True
+    Application.ScreenRefresh
+End Function

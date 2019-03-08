@@ -1,0 +1,37 @@
+~~~~~~ Excel ~~~~~~
+
+~~~~ Highlight of Current Row
+
+Private Sub Worksheet_SelectionChange(ByVal Target As Range)
+If Target.Cells.Count > 1 Then Exit Sub
+Application.ScreenUpdating = False
+'Clear all cell colours
+Cells.Interior.ColorIndex = 0
+With Target
+'Row and column highlightingfor the active cell
+'.EntireRow.Interior.ColorIndex = 19
+.EntireColumn.Interior.ColorIndex = 19
+End With
+Application.ScreenUpdating = True
+End Sub
+
+
+
+~~~~ SheetChange Event
+' Use Application.EnableEvents to prevent Excel from calling event procedures.
+' Put Application.ScreenUpdating = False at the beginning of code and Application.ScreenUpdating = True at the end.
+
+Private Sub Workbook_SheetChange(ByVal Sh As Object, ByVal Target As Range)
+    Application.EnableEvents = False
+    Dim Row As Long
+    Dim Col As Long
+    Row = Target.Row
+    Col = Target.Column
+    If Col <> 7 Then
+        Range("G" & Row).Select
+        Selection.Formula = "=IF(F" & Row & "=""Win"",E" & Row & ",IF(F" & Row & "=""Loss"",-D" & Row & ",0))"
+        Target.Select
+    End If
+    Call SumRiskColumn
+    Application.EnableEvents = True
+End Sub
